@@ -30,8 +30,8 @@ class Game {
 
   //a method which creates new asteroids and adds them to the list
   addAsteroid() {
-    const x = Constants.MAP_SIZE * (0.25 + Math.random() * 0.5);
-    const y = Constants.MAP_SIZE * (0.25 + Math.random() * 0.5);
+    const x = Constants.MAP_SIZE * (0.25 + Math.random() * 0.5);// x values from 25% to 75% of the map
+    const y = 0;//All asteroids start at the top.
     const r = (Math.random() + 1) * 10; //random from 10 to 20
     this.asteroids.push(new Asteroid(x, y, r));
   }
