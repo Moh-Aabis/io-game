@@ -32,7 +32,7 @@ function onMouseUp(e) {
   if (e.button == 0) {
     input.lcl = false;
   }
-  // console.log(input.lcl);
+  //console.log("click released");
   updateInput(input);
 }
 

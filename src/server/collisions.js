@@ -1,25 +1,63 @@
 const Constants = require('../shared/constants');
 
-// Returns an array of bullets to be destroyed.
-function applyCollisions(players, bullets) {
-  const destroyedBullets = [];
-  for (let i = 0; i < bullets.length; i++) {
-    // Look for a player (who didn't create the bullet) to collide each bullet with.
-    // As soon as we find one, break out of the loop to prevent double counting a bullet.
-    for (let j = 0; j < players.length; j++) {
-      const bullet = bullets[i];
-      const player = players[j];
-      if (
-        bullet.parentID !== player.id &&
-        player.distanceTo(bullet) <= Constants.PLAYER_RADIUS + Constants.BULLET_RADIUS
-      ) {
-        destroyedBullets.push(bullet);
-        player.takeBulletDamage();
-        break;
+class Collision {
+  constructor(o1, o2) {
+    this.o1 = o1;
+    this.o2 = o2;
+  }
+
+  damageObjects () {
+    this.o1.hp -= Constants.DAMAGE;
+    this.o2.hp -= Constants.DAMAGE;
+  }
+}
+
+class CollisionHandler {
+  constructor() {
+    this.collisions = [];
+  }
+
+  applyCollisions(players, bullets, asteroids) {
+    this.collisions = [];
+    this.updatePlayerBulletCollisions(players, bullets);
+    this.updateAsteroidCollisions(asteroids, players, bullets);
+    this.resolveCollisions();
+  }
+
+  updatePlayerBulletCollisions (players, bullets) {
+    for (let i = 0; i < players.length; i++) {
+      const player = players[i];
+      const enemyBullets = bullets.filter(b => b.parentID != player.id);
+      for (let j = 0; j < enemyBullets.length; j++) {
+        this.checkCollisionCircles(player, enemyBullets[j]);
       }
     }
   }
-  return destroyedBullets;
+
+  updateAsteroidCollisions (asteroids, players, bullets) {
+    const objects = players.concat(bullets);
+    for (let i = 0; i < asteroids.length; i++) {
+      const asteroid = asteroids[i];
+      for (let j = 0; j < objects.length; j++) {
+        this.checkCollisionCircles(asteroid, objects[j]);
+      }
+    }
+  }
+
+  checkCollisionCircles (o1, o2) {
+    if (o1.distanceTo(o2) < o1.radius + o2.radius) {
+      this.collisions.push(new Collision(o1, o2));
+    }
+  }
+
+  resolveCollisions () {
+    this.collisions.forEach(
+      col => {
+        col.damageObjects();
+      }
+    );
+  }
+
 }
 
-module.exports = applyCollisions;
+module.exports = CollisionHandler;
