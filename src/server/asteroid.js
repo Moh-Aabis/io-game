@@ -10,7 +10,7 @@ class Asteroid extends ObjectClass {
     }
 
     checkOutOfBounds() {
-        return this.distanceTo({x: 0, y: 0}) > 1000;
+        return this.y > Constants.MAP_SIZE;
     }
 
     serializeForUpdate() {
@@ -19,6 +19,7 @@ class Asteroid extends ObjectClass {
           x: this.x,
           y: this.y,
           r: this.radius,
+          hp: this.hp,
         };
       }
 }

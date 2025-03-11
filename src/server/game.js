@@ -148,13 +148,13 @@ class Game {
 
   createUpdate(player, leaderboard) {
     const nearbyPlayers = Object.values(this.players).filter(
-      p => p !== player && p.distanceTo(player) <= Constants.MAP_SIZE / 2,
+      p => p !== player && p.distanceTo(player) <= Constants.VISION_RANGE,
     );
     const nearbyBullets = this.bullets.filter(
-      b => b.distanceTo(player) <= Constants.MAP_SIZE / 2,
+      b => b.distanceTo(player) <= Constants.VISION_RANGE,
     );
     const nearbyAsteroids = this.asteroids.filter(  //choose asteroids that are close to the player
-      b => b.distanceTo(player) <= Constants.MAP_SIZE / 2,
+      b => b.distanceTo(player) <= Constants.VISION_RANGE,
     );
 
     return {

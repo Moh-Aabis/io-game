@@ -88,18 +88,22 @@ function renderPlayer(me, player) {
   context.restore();
 
   // Draw health bar
+  renderHealthBar(canvasX, canvasY, PLAYER_RADIUS, player.hp, PLAYER_MAX_HP);
+}
+
+function renderHealthBar (canvasX, canvasY, radius, currentHP, maxHP) {
   context.fillStyle = 'white';
   context.fillRect(
-    canvasX - PLAYER_RADIUS,
-    canvasY + PLAYER_RADIUS + 8,
-    PLAYER_RADIUS * 2,
+    canvasX - radius,
+    canvasY + radius + 8,
+    radius * 2,
     2,
   );
   context.fillStyle = 'red';
   context.fillRect(
-    canvasX - PLAYER_RADIUS + PLAYER_RADIUS * 2 * player.hp / PLAYER_MAX_HP,
-    canvasY + PLAYER_RADIUS + 8,
-    PLAYER_RADIUS * 2 * (1 - player.hp / PLAYER_MAX_HP),
+    canvasX - radius + radius * 2 * currentHP / maxHP,
+    canvasY + radius + 8,
+    radius * 2 * (1 - currentHP / maxHP),
     2,
   );
 }
@@ -117,13 +121,16 @@ function renderBullet(me, bullet) {
 
 function renderAsteroid(me, asteroid) { //draws the asteroid at the correct position on the screen compared to the player
   const { x, y, r } = asteroid;
+  const canvasX = canvas.width / 2 + x - me.x;
+  const canvasY = canvas.height / 2 + y - me.y;
   context.drawImage(
     getAsset('asteroid.svg'),
-    canvas.width / 2 + x - me.x - r,
-    canvas.height / 2 + y - me.y - r,
+    canvasX - r,
+    canvasY - r,
     r * 2,
     r * 2,
   );
+  renderHealthBar(canvasX, canvasY, r, asteroid.hp, Constants.ASTEROID_HP);
 }
 
 function renderMainMenu() {
