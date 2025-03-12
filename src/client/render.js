@@ -28,56 +28,82 @@ let animationFrameRequestId;
 function render() {
   const { me, others, bullets, asteroids } = getCurrentState();
   if (me) {
-    // Draw background
-    renderBackground(me.x, me.y);
+    const screenOriginWorldXY = {
+      x:  me.x - canvas.width/2,
+      y: me.y - canvas.height/2,
+    };
 
-    // Draw boundaries
-    context.strokeStyle = 'black';
-    context.lineWidth = 1;
-    context.strokeRect(canvas.width / 2 - me.x, canvas.height / 2 - me.y, MAP_SIZE, MAP_SIZE);
+    // Draw background
+    const backgroundXY = transformXY({x: Constants.MAP_SIZE/2, y: Constants.MAP_SIZE/2}, screenOriginWorldXY);
+    renderBackground(backgroundXY.x, backgroundXY.y);
 
     // Draw all bullets
-    bullets.forEach(renderBullet.bind(null, me));
+    bullets.forEach(b => {
+      renderBullet(b, screenOriginWorldXY);
+    });
 
     // Draw asteroids
-    asteroids.forEach(renderAsteroid.bind(null, me)); 
+    asteroids.forEach(o => {
+      renderAsteroid(o, screenOriginWorldXY);
+    }); 
 
     // Draw all players
-    renderPlayer(me, me);
-    others.forEach(renderPlayer.bind(null, me));
+    renderPlayer(me);
+    others.forEach(o => {
+      renderOther(o, screenOriginWorldXY);
+    });
   }
 
   // Rerun this render function on the next frame
   animationFrameRequestId = requestAnimationFrame(render);
 }
 
+function transformXY(object, origin) {
+  return {
+    x: object.x - origin.x,
+    y: object.y - origin.y,
+  }
+}
+
 function renderBackground(x, y) {
-  const backgroundX = MAP_SIZE / 2 - x + canvas.width / 2;
-  const backgroundY = MAP_SIZE / 2 - y + canvas.height / 2;
   const backgroundGradient = context.createRadialGradient(
-    backgroundX,
-    backgroundY,
+    x,
+    y,
     MAP_SIZE / 10,
-    backgroundX,
-    backgroundY,
+    x,
+    y,
     MAP_SIZE / 2,
   );
   backgroundGradient.addColorStop(0, 'black');
   backgroundGradient.addColorStop(1, 'gray');
   context.fillStyle = backgroundGradient;
   context.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Draw boundaries
+  context.strokeStyle = 'black';
+  context.lineWidth = 1;
+  context.strokeRect(x - MAP_SIZE/2, y - MAP_SIZE/2, MAP_SIZE, MAP_SIZE);
 }
 
-// Renders a ship at the given coordinates
-function renderPlayer(me, player) {
-  const { x, y, direction } = player;
-  const canvasX = canvas.width / 2 + x - me.x;
-  const canvasY = canvas.height / 2 + y - me.y;
+function renderPlayer(player) {
+  const x = canvas.width / 2, 
+      y = canvas.height / 2,
+      direction = player.direction;
+  drawShip(x, y, direction);
+  renderHealthBar(x, y, PLAYER_RADIUS, player.hp, PLAYER_MAX_HP);  
+}
 
-  // Draw ship
+function renderOther(other, origin) {
+  const { x, y } = transformXY(other, origin);
+  const direction = other.direction;
+  drawShip(x, y, direction);
+  renderHealthBar(x, y, PLAYER_RADIUS, other.hp, PLAYER_MAX_HP);
+}
+
+function drawShip(x, y, direction) {
   context.save();
-  context.translate(canvasX, canvasY);
-  context.rotate(direction);
+  context.translate(x, y);
+  context.rotate(direction+Math.PI/2);
   context.drawImage(
     getAsset('ship.svg'),
     -PLAYER_RADIUS,
@@ -86,9 +112,6 @@ function renderPlayer(me, player) {
     PLAYER_RADIUS * 2,
   );
   context.restore();
-
-  // Draw health bar
-  renderHealthBar(canvasX, canvasY, PLAYER_RADIUS, player.hp, PLAYER_MAX_HP);
 }
 
 function renderHealthBar (canvasX, canvasY, radius, currentHP, maxHP) {
@@ -108,29 +131,28 @@ function renderHealthBar (canvasX, canvasY, radius, currentHP, maxHP) {
   );
 }
 
-function renderBullet(me, bullet) {
-  const { x, y } = bullet;
+function renderBullet(bullet, origin) {
+  const { x, y } = transformXY(bullet, origin);
   context.drawImage(
     getAsset('bullet.svg'),
-    canvas.width / 2 + x - me.x - BULLET_RADIUS,
-    canvas.height / 2 + y - me.y - BULLET_RADIUS,
+    x - BULLET_RADIUS,
+    y - BULLET_RADIUS,
     BULLET_RADIUS * 2,
     BULLET_RADIUS * 2,
   );
 }
 
-function renderAsteroid(me, asteroid) { //draws the asteroid at the correct position on the screen compared to the player
-  const { x, y, r } = asteroid;
-  const canvasX = canvas.width / 2 + x - me.x;
-  const canvasY = canvas.height / 2 + y - me.y;
+function renderAsteroid(asteroid, origin) { //draws the asteroid at the correct position on the screen compared to the player
+  const { x, y } = transformXY(asteroid, origin);
+  const r = asteroid.r;
   context.drawImage(
     getAsset('asteroid.svg'),
-    canvasX - r,
-    canvasY - r,
+    x - r,
+    y - r,
     r * 2,
     r * 2,
   );
-  renderHealthBar(canvasX, canvasY, r, asteroid.hp, Constants.ASTEROID_HP);
+  renderHealthBar(x, y, r, asteroid.hp, Constants.ASTEROID_HP);
 }
 
 function renderMainMenu() {

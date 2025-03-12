@@ -4,22 +4,20 @@ const Constants = require('../shared/constants');
 
 class Asteroid extends ObjectClass {
     constructor(x, y, r) {
-        super(shortid(), x, y, Math.PI, 100);
+        super(shortid(), x, y, 0, 100, Math.PI);
         this.radius = r;
         this.hp = Constants.ASTEROID_HP;
     }
 
     checkOutOfBounds() {
-        return this.y > Constants.MAP_SIZE;
+        return this.position.y > Constants.MAP_SIZE;
     }
 
     serializeForUpdate() {
         return {
-          id: this.id,
-          x: this.x,
-          y: this.y,
+          ...(super.serializeForUpdate()),
           r: this.radius,
-          hp: this.hp,
+          hp: this.hp
         };
       }
 }

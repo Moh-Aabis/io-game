@@ -1,10 +1,11 @@
 const ObjectClass = require('./object');
 const Bullet = require('./bullet');
 const Constants = require('../shared/constants');
+const Vector2D = require('./vector');
 
 class Player extends ObjectClass {
   constructor(id, username, x, y) {
-    super(id, x, y, Math.random() * 2 * Math.PI, Constants.PLAYER_SPEED);
+    super(id, x, y, 0, 0, Math.random() * 2 * Math.PI);
     this.username = username;
     this.hp = Constants.PLAYER_MAX_HP;
     this.radius = Constants.PLAYER_RADIUS;
@@ -12,6 +13,7 @@ class Player extends ObjectClass {
     this.score = 0;
     this.input = {
       lcl: false,
+      rcl: false,
       dir: 0,
       w: false,
       a: false,
@@ -23,15 +25,15 @@ class Player extends ObjectClass {
 
   // Returns a newly created bullet, or null.
   update(dt) {
-    this.setInputVelocity();
+    if (this.input.rcl == true) {
+      this.updateVelocity(dt);
+    }
     this.updatePosition(dt);
+    // Make sure the player stays in bounds
+    this.position.clamp(0, Constants.MAP_SIZE);
 
     // Update score
     this.score += dt * Constants.SCORE_PER_SECOND;
-
-    // Make sure the player stays in bounds
-    this.x = Math.max(0, Math.min(Constants.MAP_SIZE, this.x));
-    this.y = Math.max(0, Math.min(Constants.MAP_SIZE, this.y));
 
     // Fire a bullet, if needed
     this.fireCooldown -= dt;
@@ -40,39 +42,23 @@ class Player extends ObjectClass {
     }
     if (this.fireCooldown == 0 && this.input.lcl) {
       this.fireCooldown += Constants.PLAYER_FIRE_COOLDOWN;
-      return new Bullet(this.id, this.x, this.y, this.direction);
+      const bulletVelocity = new Vector2D(Math.cos(this.direction), Math.sin(this.direction)).setMagnitude(Constants.BULLET_SPEED).add(this.velocity);
+      return new Bullet(
+        this.id, 
+        this.position, 
+        bulletVelocity, 
+        this.direction
+      );
     }
 
     return null;
   }
 
-  setInputVelocity() {
-    this.inputVelocity = {x: 0, y: 0};
-    if (this.input.w) {
-      this.inputVelocity.y -= 1;
-    }
-    if (this.input.a) {
-      this.inputVelocity.x -= 1;
-    }
-    if (this.input.s) {
-      this.inputVelocity.y += 1;
-    }
-    if (this.input.d) {
-      this.inputVelocity.x += 1;
-    }
-    // vector magnitude using pythagorean  theorem
-    const magnitude = Math.sqrt(this.inputVelocity.x ** 2 + this.inputVelocity.y ** 2);
-    // normalize input velocity vector
-    if (magnitude != 0) {
-      this.inputVelocity.x /= magnitude;
-      this.inputVelocity.y /= magnitude;
-    }
-  }
-
-  updatePosition(dt) {
-    // velocity-position kinematics
-    this.x += this.speed * this.inputVelocity.x * dt;
-    this.y += this.speed * this.inputVelocity.y * dt;
+  updateVelocity() {
+    this.velocity = new Vector2D(
+      Constants.PLAYER_SPEED * Math.cos(this.direction), 
+      Constants.PLAYER_SPEED * Math.sin(this.direction)
+    );
   }
 
   takeBulletDamage() {

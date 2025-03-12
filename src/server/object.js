@@ -1,21 +1,20 @@
+const Vector2D = require('./vector');
+
 class Object {
-  constructor(id, x, y, dir, speed) {
+  constructor(id, x, y, vx, vy, dir) {
     this.id = id;
-    this.x = x;
-    this.y = y;
+    this.position = new Vector2D(x, y);
+    this.velocity = new Vector2D(vx, vy);
     this.direction = dir;
-    this.speed = speed;
   }
 
-  update(dt) {
-    this.x += dt * this.speed * Math.sin(this.direction);
-    this.y -= dt * this.speed * Math.cos(this.direction);
+  updatePosition(dt) {
+    this.position.add(this.velocity.clone().multiply(dt));
+    // this.position.addMagnitudeInDirection(dt * this.speed, this.direction);
   }
 
   distanceTo(object) {
-    const dx = this.x - object.x;
-    const dy = this.y - object.y;
-    return Math.sqrt(dx * dx + dy * dy);
+    return this.position.clone().subtract(object.position).magnitude();
   }
 
   setDirection(dir) {
@@ -25,8 +24,8 @@ class Object {
   serializeForUpdate() {
     return {
       id: this.id,
-      x: this.x,
-      y: this.y,
+      x: this.position.x,
+      y: this.position.y,
     };
   }
 }

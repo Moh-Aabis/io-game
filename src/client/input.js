@@ -4,6 +4,7 @@ import { updateDirection, updateInput } from './networking';
 
 const input = {
   lcl: false,
+  rcl: false,
   dir: 0,
   w: false,
   a: false,
@@ -24,6 +25,9 @@ function onMouseDown(e) {
   if (e.button == 0) {
     input.lcl = true;
   }
+  if (e.button == 2) {
+    input.rcl = true;
+  }
   // console.log(input.lcl);
   updateInput(input);
 }
@@ -31,6 +35,9 @@ function onMouseDown(e) {
 function onMouseUp(e) {
   if (e.button == 0) {
     input.lcl = false;
+  }
+  if (e.button == 2) {
+    input.rcl = false;
   }
   //console.log("click released");
   updateInput(input);
@@ -63,7 +70,7 @@ function onKeyUp(e) {
 }
 
 function handleDirection(x, y) {
-  const dir = Math.atan2(x - window.innerWidth / 2, window.innerHeight / 2 - y);
+  const dir = Math.atan2(y - window.innerHeight / 2, x - window.innerWidth / 2);
   input.dir = dir;
   updateDirection(dir);
 }

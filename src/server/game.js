@@ -34,7 +34,7 @@ class Game {
   addAsteroid() {
     const x = Constants.MAP_SIZE * (0.25 + Math.random() * 0.5);  //x values from 0.25 to 0.75 of width of map
     const y = 0;  //all asteroids start at top
-    const r = (Math.random() + 1) * 10; //random from 10 to 20
+    const r = Math.random() * (Constants.ASTEROID_MAX_RADIUS - Constants.ASTEROID_MIN_RADIUS) + Constants.ASTEROID_MIN_RADIUS;
     this.asteroids.push(new Asteroid(x, y, r));
   }
 
@@ -56,16 +56,11 @@ class Game {
     const dt = (now - this.lastUpdateTime) / 1000;
     this.lastUpdateTime = now;
 
-    //add asteroids
-    // if (this.asteroids.length < 10) {
-    //   this.addAsteroid();
-    // }
-
     const asteroidsToRemove = []; //store asteroids for removing here
 
     //update asteroids positions and check if they are too far
     this.asteroids.forEach(asteroid => {
-      asteroid.update(dt);
+      asteroid.updatePosition(dt);
 
       //check for asteroids that are too far
       if (asteroid.checkOutOfBounds() || asteroid.hp <= 0) {

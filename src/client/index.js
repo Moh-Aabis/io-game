@@ -16,6 +16,11 @@ import './css/main.css';
 const playMenu = document.getElementById('play-menu');
 const playButton = document.getElementById('play-button');
 const usernameInput = document.getElementById('username-input');
+window.addEventListener('contextmenu', preventDefaultFunction);
+
+function preventDefaultFunction (e) {
+  e.preventDefault();
+}
 
 Promise.all([
   connect(onGameOver),
